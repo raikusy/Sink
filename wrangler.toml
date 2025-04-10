@@ -9,3 +9,11 @@ port = 3000
 
 [ai]
 binding = "AI"
+
+[[kv_namespaces]]
+binding = "KV"
+id = "5d319286bfd54dbeac64a63c23487a12"
+
+[[analytics_engine_datasets]]
+binding = "ANALYTICS"
+dataset = "sink"
