@@ -1,3 +1,4 @@
+name = "sink"
 pages_build_output_dir = "dist"
 upload_source_maps = true
 
