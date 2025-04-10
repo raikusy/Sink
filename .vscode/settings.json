@@ -63,5 +63,8 @@
   "i18n-ally.parsers.typescript.compilerOptions": {
     "moduleResolution": "node"
   },
-  "i18n-ally.enabledFrameworks": ["vue"]
+  "i18n-ally.enabledFrameworks": [
+    "vue"
+  ],
+  "typescript.tsdk": "node_modules/typescript/lib"
 }
