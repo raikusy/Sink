@@ -61,7 +61,7 @@
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "vue-tsc": "^2.2.0",
-    "wrangler": "^3.99.0"
+    "wrangler": "^4.9.1"
   },
   "simple-git-hooks": {
     "pre-commit": "npm run lint-staged"
