@@ -10,7 +10,7 @@ dist
 node_modules
 
 # Logs
-logs
+./logs
 *.log
 
 # Misc
@@ -26,3 +26,10 @@ logs
 site
 cache
 public/world.json
+.dev.*
+.kiro/steering/locale.md
+
+.claude
+.opencode
+.agents
+opencode.json

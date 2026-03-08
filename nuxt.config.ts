@@ -1,24 +1,25 @@
+import process from 'node:process'
+import tailwindcss from '@tailwindcss/vite'
 import { currentLocales } from './i18n/i18n'
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-
+  extends: ['./layers/dashboard'],
   modules: [
-    '@nuxthub/core',
-    'shadcn-nuxt',
-    '@nuxt/eslint',
-    '@nuxtjs/tailwindcss',
     '@nuxtjs/color-mode',
     '@nuxtjs/i18n',
+    '@nuxt/eslint',
+    '@pinia/nuxt',
+    '@vueuse/motion/nuxt',
+    'shadcn-nuxt',
   ],
   devtools: { enabled: true },
-
+  css: ['@/assets/css/tailwind.css'],
   colorMode: {
     classSuffix: '',
   },
-
   runtimeConfig: {
-    siteToken: 'SinkCool',
+    siteToken: process.env.NUXT_SITE_TOKEN || crypto.randomUUID(),
     redirectStatusCode: '301',
     linkCacheTtl: 60,
     redirectWithQuery: false,
@@ -26,61 +27,90 @@ export default defineNuxtConfig({
     cfAccountId: '',
     cfApiToken: '',
     dataset: 'sink',
-    aiModel: '@cf/meta/llama-3.1-8b-instruct',
-    aiPrompt: `You are a URL shortening assistant, please shorten the URL provided by the user into a SLUG. The SLUG information must come from the URL itself, do not make any assumptions. A SLUG is human-readable and should not exceed three words and can be validated using regular expressions {slugRegex} . Only the best one is returned, the format must be JSON reference {"slug": "example-slug"}`,
+    aiModel: '@cf/qwen/qwen3-30b-a3b-fp8',
+    aiPrompt: `You are a URL shortening assistant, please shorten the URL provided by the user into a SLUG. The SLUG information should be derived from the URL and page content (if provided). Do not make any assumptions beyond the given information. A SLUG is human-readable and should not exceed three words and can be validated using regular expressions {slugRegex} . Only the best one is returned, the format must be JSON reference {"slug": "example-slug"}`,
     caseSensitive: false,
     listQueryLimit: 500,
     disableBotAccessLog: false,
+    disableAutoBackup: false,
+    notFoundRedirect: '',
+    safeBrowsingDoh: '', // Set to DoH URL to enable auto-detection, e.g. https://family.cloudflare-dns.com/dns-query
     public: {
       previewMode: '',
       slugDefaultLength: '6',
+      kvBatchLimit: '50',
     },
   },
-
   routeRules: {
     '/': {
       prerender: true,
     },
-    '/dashboard/**': {
-      ssr: false,
+    '/api/**': {
+      cors: process.env.NUXT_API_CORS === 'true',
     },
-    '/dashboard': {
-      redirect: '/dashboard/links',
+    '/sphere.bin': {
+      headers: { 'Cache-Control': 'public, max-age=2592000, immutable' },
+    },
+    '/*.json': {
+      headers: { 'Cache-Control': 'public, max-age=2592000, immutable' },
+    },
+    '/*.geojson': {
+      headers: { 'Cache-Control': 'public, max-age=2592000, immutable' },
     },
   },
-
-  compatibilityDate: '2024-07-08',
-
+  experimental: {
+    enforceModuleCompatibility: true,
+  },
+  typescript: {
+    tsConfig: {
+      compilerOptions: {
+        types: ['vite/client'],
+      },
+    },
+  },
+  compatibilityDate: 'latest',
   nitro: {
+    preset: !import.meta.env.CI ? 'cloudflare-module' : undefined,
     experimental: {
-      // Enable Server API documentation within NuxtHub
       openAPI: true,
     },
+    timing: true,
+    openAPI: {
+      production: 'runtime',
+      meta: {
+        title: 'Sink API',
+        description: 'A Simple / Speedy / Secure Link Shortener with Analytics, 100% run on Cloudflare.',
+      },
+      route: '/_docs/openapi.json',
+      ui: {
+        scalar: {
+          route: '/_docs/scalar',
+        },
+        swagger: {
+          route: '/_docs/swagger',
+        },
+      },
+    },
   },
-
-  hub: {
-    ai: true,
-    analytics: true,
-    blob: false,
-    cache: false,
-    database: false,
-    kv: true,
+  vite: {
+    plugins: [
+      tailwindcss(),
+    ],
+    worker: {
+      format: 'es',
+    },
   },
-
   eslint: {
     config: {
-      stylistic: true,
       standalone: false,
     },
   },
-
   i18n: {
     locales: currentLocales,
     compilation: {
       strictMessage: false,
       escapeHtml: true,
     },
-    lazy: true,
     strategy: 'no_prefix',
     detectBrowserLanguage: {
       useCookie: true,
@@ -89,5 +119,16 @@ export default defineNuxtConfig({
     },
     baseUrl: '/',
     defaultLocale: 'en-US',
+  },
+  shadcn: {
+    /**
+     * Prefix for all the imported component
+     */
+    prefix: '',
+    /**
+     * Directory that the component lives in.
+     * @default "./components/ui"
+     */
+    componentDir: './app/components/ui',
   },
 })
